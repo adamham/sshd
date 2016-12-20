@@ -10,6 +10,7 @@
       apt:
         name: openssh-server
         state: present
+        update_cache: yes
       notify:
         - restart sshd
       tags:
