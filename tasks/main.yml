@@ -6,11 +6,17 @@
 - block:
     - include_vars: deb-config.yml
 
+    - name: apt | update cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 86400
+      tags:
+        - locale_apt-update-cache
+
     - name: apt | install sshd
       apt:
         name: openssh-server
         state: present
-        update_cache: yes
       notify:
         - restart sshd
       tags:
