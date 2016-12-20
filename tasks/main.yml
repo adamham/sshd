@@ -1,0 +1,68 @@
+---
+- assert:
+    that: ansible_version.major == 2
+    msg: "This playbook is for Ansible version 2"
+
+- block:
+    - include_vars: deb-config.yml
+
+    - name: apt | install sshd
+      apt:
+        name: openssh-server
+        state: present
+      notify:
+        - restart sshd
+      tags:
+        - sshd_install-packages
+
+    - name: configure sshd
+      template:
+        src: 'sshd_config.j2'
+        dest: '/etc/ssh/sshd_config'
+      notify:
+        - restart sshd
+        - restart ssh
+      tags:
+        - sshd_configure-sshd
+
+    - name: enable sshd in systemd
+      service:
+        name: ssh
+        enabled: yes
+        state: started
+      tags:
+        - sshd_configure-systemd
+
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+
+- block:
+    - include_vars: rhel-config.yml
+
+    - name: yum | install sshd
+      yum:
+        name: openssh-server
+        state: present
+      notify:
+        - restart sshd
+      tags:
+        - sshd_install-packages
+
+    - name: configure sshd
+      template:
+        src: 'sshd_config.j2'
+        dest: '/etc/ssh/sshd_config'
+      notify:
+        - restart sshd
+        - restart ssh
+      tags:
+        - sshd_configure-sshd
+
+    - name: enable sshd in systemd
+      service:
+        name: sshd
+        enabled: yes
+        state: started
+      tags:
+        - sshd_configure-systemd
+
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
